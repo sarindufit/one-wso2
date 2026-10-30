@@ -145,12 +145,38 @@ export interface ApprovalGroup {
   readonly reviewers: readonly string[];
 }
 
-export type MatchField = "PRODUCT_ID" | "CLASSIFICATION" | "PRODUCT_UNIT";
+/**
+ * How a mapping picks its products (D117), most specific first: a product
+ * list, a SKU pattern (* = any characters), or a rule on classification
+ * and/or product unit.
+ */
+export type MappingKind = "PRODUCTS" | "SKU" | "RULE";
 
+/** A product in a product list, with its name and code as they were when chosen. */
+export interface ListedProduct {
+  readonly id: string;
+  readonly name: string;
+  readonly code: string;
+}
+
+/** Puts products into a group; only the fields of its kind are set. */
 export interface ApprovalMapping {
-  readonly field: MatchField;
-  readonly value: string;
+  readonly kind: MappingKind;
+  readonly products: readonly ListedProduct[];
+  readonly skuPattern: string;
+  /** Rule fields; "" = any value (not both). */
+  readonly classification: string;
+  readonly productUnit: string;
   readonly groupCode: string;
+}
+
+/** An active Salesforce product, for counting and picking (D117). */
+export interface CatalogProduct {
+  readonly id: string;
+  readonly name: string;
+  readonly code: string;
+  readonly classification: string;
+  readonly productUnit: string;
 }
 
 export interface ApprovalSettings {

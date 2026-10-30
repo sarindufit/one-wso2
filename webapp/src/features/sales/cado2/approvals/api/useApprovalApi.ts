@@ -27,6 +27,7 @@ import type {
   ApprovalPreview,
   ApprovalPreviewInput,
   ApprovalWorkflow,
+  CatalogProduct,
   MatrixChange,
   MatrixSaveResult,
 } from "./approvalTypes";
@@ -145,6 +146,22 @@ export function useMatrixChanges() {
     queryFn: async () => authedGet<MatrixChange[]>(cado2ServiceUrls.approvalMatrixChanges, await getToken()),
     enabled: ready,
     ...live,
+    retry: httpRetry,
+  });
+}
+
+/**
+ * Salesforce's active products, for the product mapping (D117): picking
+ * products for a list, and counting what a pattern or rule matches. The
+ * backend reuses its copy for 5 minutes; so does this.
+ */
+export function useMatrixProducts(enabled: boolean) {
+  const { getToken, ready, key } = useCado2Basis();
+  return useQuery<CatalogProduct[], Error>({
+    queryKey: key("approvals", "matrix-products"),
+    queryFn: async () => authedGet<CatalogProduct[]>(cado2ServiceUrls.approvalMatrixProducts, await getToken()),
+    enabled: ready && enabled,
+    staleTime: 5 * 60_000,
     retry: httpRetry,
   });
 }

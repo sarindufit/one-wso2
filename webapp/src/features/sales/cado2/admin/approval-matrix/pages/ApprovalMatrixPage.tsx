@@ -47,22 +47,16 @@ import { useApprovalMatrix, useMatrixChanges, useSaveApprovalMatrix } from "@fea
 import type {
   AffectedQuote,
   ApprovalGroup,
-  ApprovalMapping,
   ApprovalMatrix,
   ApprovalRoleInfo,
   ApprovalSettings,
-  MatchField,
 } from "@features/sales/cado2/approvals/api/approvalTypes";
+import ProductMappingTab from "@features/sales/cado2/admin/approval-matrix/components/ProductMappingTab";
+import { mappingLabel } from "@features/sales/cado2/admin/approval-matrix/model/productMapping";
 import { roleLabel } from "@features/sales/cado2/approvals/model/approvalText";
 import { BILLING_LABEL, BILLING_OPTIONS, formatDate } from "@features/sales/cado2/quotes/form/draftForm";
 
 const TABS = ["Discount groups", "Product mapping", "Commercial rules", "Change log"] as const;
-
-const MATCH_LABEL: Record<MatchField, string> = {
-  PRODUCT_ID: "A single product (Salesforce Id)",
-  CLASSIFICATION: "product_Classification__c",
-  PRODUCT_UNIT: "Product_Unit__c",
-};
 
 /**
  * The approval matrix, as admin data:
@@ -160,7 +154,7 @@ export default function ApprovalMatrixPage(): JSX.Element {
       </Box>
       <Box role="tabpanel" aria-label={TABS[tab]}>
         {tab === 0 ? <GroupsEditor matrix={draft} onChange={(groups) => update({ groups })} /> : null}
-        {tab === 1 ? <MappingsEditor matrix={draft} onChange={(mappings) => update({ mappings })} /> : null}
+        {tab === 1 ? <ProductMappingTab matrix={draft} onChange={(mappings) => update({ mappings })} /> : null}
         {tab === 2 ? (
           <SettingsEditor settings={draft.settings} roles={draft.roles} onChange={(settings) => update({ settings })} />
         ) : null}
@@ -211,7 +205,10 @@ function ProblemList({ issues, matrix }: { issues: readonly Issue[]; matrix: App
     const g = /^groups\[(\d+)\]/.exec(field);
     if (g) return matrix.groups[Number(g[1])]?.name || `Group ${Number(g[1]) + 1}`;
     const m = /^mappings\[(\d+)\]/.exec(field);
-    if (m) return `Product mapping row ${Number(m[1]) + 1}`;
+    if (m) {
+      const mp = matrix.mappings[Number(m[1])];
+      return mp ? `Product mapping, ${mappingLabel(mp)}` : "Product mapping";
+    }
     if (field.startsWith("settings.")) return "Commercial rules";
     return "";
   };
@@ -391,76 +388,6 @@ function GroupsEditor({ matrix, onChange }: { matrix: ApprovalMatrix; onChange: 
           Add a discount group
         </Button>
       </Box>
-    </Stack>
-  );
-}
-
-// --- Product mapping ---------------------------------------------------------
-
-function MappingsEditor({ matrix, onChange }: { matrix: ApprovalMatrix; onChange: (m: ApprovalMapping[]) => void }): JSX.Element {
-  const set = (i: number, m: ApprovalMapping) => onChange(matrix.mappings.map((x, j) => (j === i ? m : x)));
-  return (
-    <Stack spacing={2}>
-      <Typography variant="body2" color="text.secondary">
-        Puts Salesforce products into a discount group. When a product matches more than one row, the most specific wins: a
-        single product, then product_Classification__c, then Product_Unit__c. A discounted product in no group can&apos;t be
-        submitted — add it here.
-      </Typography>
-      <Paper variant="outlined" sx={{ borderRadius: 2, p: 2 }}>
-        <Stack spacing={1.25}>
-          {matrix.mappings.map((m, i) => (
-            <Stack key={i} direction={{ xs: "column", md: "row" }} spacing={1.5} alignItems={{ md: "center" }}>
-              <TextField
-                select
-                size="small"
-                label="Match on"
-                value={m.field}
-                onChange={(e) => set(i, { ...m, field: e.target.value as MatchField })}
-                sx={{ width: { md: 280 } }}
-              >
-                {(Object.keys(MATCH_LABEL) as MatchField[]).map((f) => (
-                  <MenuItem key={f} value={f}>
-                    {MATCH_LABEL[f]}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <TextField
-                size="small"
-                label="Value"
-                value={m.value}
-                onChange={(e) => set(i, { ...m, value: e.target.value })}
-                sx={{ flexGrow: 1 }}
-              />
-              <TextField
-                select
-                size="small"
-                label="Group"
-                value={m.groupCode}
-                onChange={(e) => set(i, { ...m, groupCode: e.target.value })}
-                sx={{ width: { md: 320 } }}
-              >
-                {matrix.groups.map((g) => (
-                  <MenuItem key={g.code || g.name} value={g.code}>
-                    {g.name || g.code}
-                  </MenuItem>
-                ))}
-              </TextField>
-              <IconButton aria-label={`Remove mapping ${m.value}`} size="small" onClick={() => onChange(matrix.mappings.filter((_, j) => j !== i))}>
-                <Trash2Icon size={16} />
-              </IconButton>
-            </Stack>
-          ))}
-          <Box>
-            <Button
-              size="small"
-              startIcon={<PlusIcon size={14} />}
-              onClick={() => onChange([...matrix.mappings, { field: "PRODUCT_UNIT", value: "", groupCode: matrix.groups[0]?.code ?? "" }])}
-            >
-              Add a mapping
-            </Button>
-          </Box>
-        </Stack>
-      </Paper>
     </Stack>
   );
 }

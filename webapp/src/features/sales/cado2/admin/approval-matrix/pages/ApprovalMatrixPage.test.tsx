@@ -36,7 +36,7 @@ const matrix: ApprovalMatrix = {
       ],
     },
   ],
-  mappings: [{ field: "PRODUCT_UNIT", value: "APIM", groupCode: "PLATFORM" }],
+  mappings: [{ kind: "RULE", products: [], skuPattern: "", classification: "", productUnit: "APIM", groupCode: "PLATFORM" }],
   settings: {
     shortTermMonths: "12",
     longTermMonths: "36",
@@ -67,6 +67,7 @@ vi.mock("@features/sales/cado2/approvals/api/useApprovalApi", () => ({
   useApprovalMatrix: () => ({ data: matrix, isPending: false, error: null, isFetching: false, refetch: vi.fn() }),
   useMatrixChanges: () => ({ data: [], isPending: false, error: null, refetch: vi.fn() }),
   useSaveApprovalMatrix: () => ({ mutate, isPending: false, error: null }),
+  useMatrixProducts: () => ({ data: [], isPending: false, error: null, refetch: vi.fn() }),
 }));
 
 describe("ApprovalMatrixPage", () => {

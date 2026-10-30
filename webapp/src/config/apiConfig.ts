@@ -1971,6 +1971,7 @@ export const cado2ServiceUrls = {
   approvalInbox: `${cado2BackendUrl}/approvals/inbox`,
   approvalMatrix: `${cado2BackendUrl}/admin/approval-matrix`,
   approvalMatrixChanges: `${cado2BackendUrl}/admin/approval-matrix/changes`,
+  approvalMatrixProducts: `${cado2BackendUrl}/admin/approval-matrix/products`,
   adminCurrencies: `${cado2BackendUrl}/admin/currencies`,
   adminCurrency: (code: string): string => `${cado2BackendUrl}/admin/currencies/${encodeSegment(code)}`,
   adminApprovalSlas: `${cado2BackendUrl}/admin/approval-slas`,

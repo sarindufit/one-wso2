@@ -205,6 +205,7 @@ export interface ApprovalMatrix {
   readonly roles: readonly ApprovalRoleInfo[];
 }
 
+/** A quote a matrix change recalled, before D118. */
 export interface AffectedQuote {
   readonly quoteId: number;
   readonly quoteNumber: string;
@@ -213,7 +214,8 @@ export interface AffectedQuote {
 
 export interface MatrixSaveResult {
   readonly saved: boolean;
-  readonly affected: readonly AffectedQuote[];
+  /** Quotes in approval: they keep their approvals (D118). */
+  readonly inFlight: number;
 }
 
 export interface MatrixChange {
@@ -221,6 +223,7 @@ export interface MatrixChange {
   readonly changedByEmail: string;
   readonly changedAt: string;
   readonly changes: readonly string[];
+  /** Only changes saved before D118 recalled quotes. */
   readonly recalled: readonly AffectedQuote[];
 }
 

@@ -45,7 +45,6 @@ import { problemOf } from "@features/sales/cado2/quotes/api/errors";
 import type { Issue } from "@features/sales/cado2/quotes/api/quoteTypes";
 import { useApprovalMatrix, useMatrixChanges, useSaveApprovalMatrix } from "@features/sales/cado2/approvals/api/useApprovalApi";
 import type {
-  AffectedQuote,
   ApprovalGroup,
   ApprovalMatrix,
   ApprovalRoleInfo,
@@ -62,9 +61,9 @@ const TABS = ["Discount groups", "Product mapping", "Commercial rules", "Change 
  * The approval matrix, as admin data:
  * each discount group's ladder and required reviewers, which products belong
  * to which group, and the numbers of the commercial rules. The rule types,
- * roles and their order are fixed in code. Saving first shows which quotes in
- * approval the change would recall; they are recalled only on confirmation
- *.
+ * roles and their order are fixed in code. Saving asks for confirmation and
+ * says how many quotes are in approval: they keep their approvals, and the
+ * new matrix applies to new submissions and resubmissions (D118).
  */
 export default function ApprovalMatrixPage(): JSX.Element {
   const loaded = useApprovalMatrix();
@@ -72,8 +71,8 @@ export default function ApprovalMatrixPage(): JSX.Element {
   const [tab, setTab] = useState(0);
   const [draft, setDraft] = useState<ApprovalMatrix | null>(null);
   const [base, setBase] = useState<ApprovalMatrix | undefined>(undefined);
-  const [impact, setImpact] = useState<readonly AffectedQuote[] | null>(null);
-  const [savedNote, setSavedNote] = useState<string | null>(null);
+  // Quotes in approval, while the confirmation is open.
+  const [inFlight, setInFlight] = useState<number | null>(null);
   const notify = useCado2Toast();
 
   // Start editing from the loaded matrix, and again after a save reloads it.
@@ -96,28 +95,16 @@ export default function ApprovalMatrixPage(): JSX.Element {
 
   const dirty = JSON.stringify(draft) !== JSON.stringify(loaded.data);
   const problems = problemOf(save.error)?.issues ?? [];
-  const update = (m: Partial<ApprovalMatrix>) => {
-    setSavedNote(null);
-    setDraft({ ...draft, ...m });
-  };
+  const update = (m: Partial<ApprovalMatrix>) => setDraft({ ...draft, ...m });
 
-  const check = () => {
-    setSavedNote(null);
-    save.mutate({ matrix: draft, confirm: false }, { onSuccess: (res) => setImpact(res.affected) });
-  };
+  const check = () => save.mutate({ matrix: draft, confirm: false }, { onSuccess: (res) => setInFlight(res.inFlight) });
   const confirm = () =>
     save.mutate(
       { matrix: draft, confirm: true },
       {
-        onSuccess: (res) => {
-          setImpact(null);
-          // Quotes recalled: it stays until closed, as it concerns other
-          // people's quotes; nothing affected: a toast (2026-10-13).
-          if (res.affected.length) {
-            setSavedNote(`Saved. ${res.affected.length} quote${res.affected.length === 1 ? " was" : "s were"} recalled for resubmission.`);
-          } else {
-            notify("Saved. No quote in approval was affected.");
-          }
+        onSuccess: () => {
+          setInFlight(null);
+          notify("Saved. New submissions use the new matrix.");
         },
       },
     );
@@ -132,16 +119,11 @@ export default function ApprovalMatrixPage(): JSX.Element {
               Discard changes
             </Button>
             <Button variant="contained" size="large" disabled={!dirty || save.isPending} onClick={check}>
-              {save.isPending && !impact ? "Checking…" : "Save changes"}
+              {save.isPending && inFlight === null ? "Checking…" : "Save changes"}
             </Button>
           </>
         }
       />
-      {savedNote ? (
-        <Alert severity="success" onClose={() => setSavedNote(null)}>
-          {savedNote}
-        </Alert>
-      ) : null}
       {problems.length ? <ProblemList issues={problems} matrix={draft} /> : null}
       {save.error && !problems.length ? <ErrorNotice error={save.error}>Couldn&apos;t save the matrix.</ErrorNotice> : null}
 
@@ -161,37 +143,23 @@ export default function ApprovalMatrixPage(): JSX.Element {
         {tab === 3 ? <ChangeLog /> : null}
       </Box>
 
-      <Dialog open={impact !== null} onClose={() => !save.isPending && setImpact(null)} fullWidth maxWidth="sm">
+      <Dialog open={inFlight !== null} onClose={() => !save.isPending && setInFlight(null)} fullWidth maxWidth="sm">
         <DialogTitle>Save the approval matrix?</DialogTitle>
         <DialogContent>
-          {impact?.length ? (
-            <Stack spacing={1.5}>
-              <Typography variant="body2">
-                This change alters the approvals of {impact.length} quote{impact.length === 1 ? "" : "s"} in approval.
-                {impact.length === 1 ? " It" : " They"} will be recalled, and the owner{impact.length === 1 ? "" : "s"} must
-                resubmit under the new matrix.
-              </Typography>
-              <Box component="ul" sx={{ m: 0, pl: 2.5 }}>
-                {impact.map((q) => (
-                  // Plain text: the admin panel gives no access to quotes themselves.
-                  <li key={q.quoteId}>
-                    <strong>{q.quoteNumber}</strong> · version {q.versionNumber}
-                  </li>
-                ))}
-              </Box>
-            </Stack>
-          ) : (
-            <Typography variant="body2">No quote in approval is affected. New submissions use the new matrix.</Typography>
-          )}
+          <Typography variant="body2">
+            {inFlight
+              ? `${inFlight} quote${inFlight === 1 ? " is" : "s are"} in approval. ${inFlight === 1 ? "It keeps its" : "They keep their"} current approvers.`
+              : "No quote is in approval."}{" "}
+            The new matrix applies to new submissions and resubmissions.
+          </Typography>
           {save.error ? <ErrorNotice error={save.error}>That didn&apos;t work.</ErrorNotice> : null}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setImpact(null)} disabled={save.isPending}>
+          <Button onClick={() => setInFlight(null)} disabled={save.isPending}>
             Cancel
           </Button>
-          {/* Red when it recalls other people's quotes (2026-10-13). */}
-          <Button variant="contained" color={impact?.length ? "error" : "primary"} onClick={confirm} disabled={save.isPending}>
-            {save.isPending ? "Saving…" : impact?.length ? "Save and recall" : "Save"}
+          <Button variant="contained" onClick={confirm} disabled={save.isPending}>
+            {save.isPending ? "Saving…" : "Save"}
           </Button>
         </DialogActions>
       </Dialog>

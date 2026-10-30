@@ -116,6 +116,24 @@ export function useDecideStep() {
   });
 }
 
+/** Deal Desk approves a stuck step for its approver, with a reason (D120). */
+export function useApproveOnBehalf() {
+  const { getToken, key } = useCado2Basis();
+  const queryClient = useQueryClient();
+  return useMutation<ApprovalWorkflow, Error, { quoteId: number; version: number; stepId: number; reason: string }>({
+    mutationFn: async ({ quoteId, version, stepId, reason }) =>
+      cado2Send<ApprovalWorkflow>("POST", cado2ServiceUrls.approvalOnBehalf(quoteId, version, stepId), await getToken(), {
+        comment: reason.trim(),
+      }),
+    onSuccess: (wf, { quoteId, version }) => {
+      queryClient.setQueryData(key("quotes", "approval", quoteId, version), wf);
+      void queryClient.invalidateQueries({ queryKey: key("quotes") });
+      void queryClient.invalidateQueries({ queryKey: key("quote-version", quoteId) });
+      void queryClient.invalidateQueries({ queryKey: key("approvals") });
+    },
+  });
+}
+
 /** The steps waiting for the caller (My approvals). */
 export function useApprovalInbox(enabled = true) {
   const { getToken, ready, key } = useCado2Basis();

@@ -103,11 +103,15 @@ export default function ApprovalReasons({ steps, selected = null, onSelect }: Ap
                 <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
                   Carried over from v{s.carriedFrom.versionNumber}
                   {s.carriedFrom.actedByEmail ? ` · approved by ${s.carriedFrom.actedByEmail}` : ""}
+                  {s.carriedFrom.onBehalf ? " (Deal Desk, on behalf)" : ""}
                   {s.carriedFrom.actedAt ? ` · ${day(s.carriedFrom.actedAt)}` : ""}
                 </Typography>
               ) : s.actedAt && s.status !== "CANCELLED" ? (
                 <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                  {status?.label} by {s.actedByEmail} · {day(s.actedAt)}
+                  {/* D120: Deal Desk approved for the role's approver. */}
+                  {s.approvedOnBehalf
+                    ? `Approved by ${s.actedByEmail} (Deal Desk) on behalf of ${s.roleLabel} · ${day(s.actedAt)}`
+                    : `${status?.label} by ${s.actedByEmail} · ${day(s.actedAt)}`}
                 </Typography>
               ) : null}
               {s.comment ? (

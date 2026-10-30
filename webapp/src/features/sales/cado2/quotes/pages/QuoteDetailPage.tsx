@@ -179,7 +179,7 @@ export default function QuoteDetailPage(): JSX.Element {
     ? [{ label: "Clone quote", icon: <CopyIcon size={16} />, onClick: () => openDialog("clone") }]
     : [];
 
-  const approvalProps = { isDraft, workflow, preview: approvalPreview };
+  const approvalProps = { isDraft, workflow, preview: approvalPreview, quoteId: q.id, versionNumber: v.versionNumber };
   // Opens the Quote tab if needed, then scrolls to "Your approval".
   const jumpToYourApproval = () => {
     if (tab === 0) {

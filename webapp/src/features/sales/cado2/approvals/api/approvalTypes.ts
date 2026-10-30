@@ -59,6 +59,8 @@ export interface CarriedFrom {
   readonly versionNumber: number;
   readonly actedAt: string | null;
   readonly actedByEmail: string | null;
+  /** That decision was Deal Desk's, for the approver (D120). */
+  readonly onBehalf?: boolean;
 }
 
 /** How a pending step stands against its SLA deadline. */
@@ -93,6 +95,10 @@ export interface ApprovalStep {
   readonly cantActReason: string | null;
   /** Already approved in an earlier version: not asked again (D119). */
   readonly carriedFrom?: CarriedFrom | null;
+  /** Deal Desk approved it for the role's approver; the comment is their reason (D120). */
+  readonly approvedOnBehalf?: boolean;
+  /** The caller, in Deal Desk, may approve this pending step for its approver now (D120). */
+  readonly canApproveOnBehalf?: boolean;
 }
 
 /** POST /approvals/preview and GET …/approval-preview. */

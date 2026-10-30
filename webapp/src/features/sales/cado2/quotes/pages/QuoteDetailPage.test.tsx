@@ -53,6 +53,7 @@ vi.mock("@features/sales/cado2/approvals/api/useApprovalApi", () => ({
   useApprovalWorkflow: () => workflow,
   useStoredApprovalPreview: () => ({ data: undefined, isPending: false, isFetching: false, error: null }),
   useDecideStep: () => decide,
+  useApproveOnBehalf: () => ({ mutate: vi.fn(), reset: vi.fn(), isPending: false, error: null }),
 }));
 
 const me = { data: { sub: "s", email: "approver@wso2.com", roles: [] as string[], approverRoles: ["DEAL_DESK"] as string[] } };

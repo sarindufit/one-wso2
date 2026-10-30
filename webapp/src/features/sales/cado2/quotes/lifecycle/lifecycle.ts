@@ -285,6 +285,9 @@ export function describeEvent({ event: e, count }: HistoryEntry): string {
       return `Waiting on ${roleOf(meta)}`;
     case "APPROVAL_APPROVED":
       return `${roleOf(meta)} approved ${v.toLowerCase()}`;
+    // D120: Deal Desk approved for an approver who was away.
+    case "APPROVAL_APPROVED_ON_BEHALF":
+      return `Deal Desk approved ${v.toLowerCase()} on behalf of ${roleOf(meta)}`;
     // D119: not asked again on a resubmission.
     case "APPROVAL_CARRIED_OVER":
       return `${roleOf(meta)}'s approval carried over${typeof meta.fromVersion === "number" ? ` from version ${meta.fromVersion}` : ""}`;

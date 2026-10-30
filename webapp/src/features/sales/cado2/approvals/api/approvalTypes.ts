@@ -45,6 +45,20 @@ export interface ApprovalTrigger {
   /** 0 for a quote-level rule. */
   readonly lineNumber: number;
   readonly reason: string;
+  /** Already approved in that version, on a resubmission (D119); null = needs approval now. */
+  readonly carriedFromVersion?: number | null;
+  /**
+   * Why a resubmission asks again ("Asked again: the discounts changed since
+   * v1 (line 1: 15% → 12%)"); on Deal Desk's reason, what changed (D119).
+   */
+  readonly note?: string | null;
+}
+
+/** The earlier decision a step was carried over from (D119). */
+export interface CarriedFrom {
+  readonly versionNumber: number;
+  readonly actedAt: string | null;
+  readonly actedByEmail: string | null;
 }
 
 /** How a pending step stands against its SLA deadline. */
@@ -77,6 +91,8 @@ export interface ApprovalStep {
   readonly canAct: boolean;
   /** Why an eligible caller can't (e.g. they submitted the quote). */
   readonly cantActReason: string | null;
+  /** Already approved in an earlier version: not asked again (D119). */
+  readonly carriedFrom?: CarriedFrom | null;
 }
 
 /** POST /approvals/preview and GET …/approval-preview. */

@@ -258,12 +258,15 @@ const ApprovalNode = memo(function ApprovalNode({ data }: NodeProps<ApprovalFlow
   const status = s.status ? STEP_STATUS[s.status] : null;
   const line = s.canAct
     ? "Your turn"
-    : node.waitingOn.length
+    : s.carriedFrom
+      ? // Approved in an earlier version, not asked again (D119).
+        `Already approved in v${s.carriedFrom.versionNumber}`
+      : node.waitingOn.length
       ? `Waiting on ${node.waitingOn.join(" and ")}`
       : status
         ? status.label
         : `${s.triggers.length} reason${s.triggers.length === 1 ? "" : "s"}`;
-  const tone = s.canAct ? "primary" : status && status.color !== "default" ? status.color : null;
+  const tone = s.canAct ? "primary" : s.carriedFrom ? "success" : status && status.color !== "default" ? status.color : null;
   return (
     <Box
       title={s.triggers.map((t) => t.reason).join("\n")}

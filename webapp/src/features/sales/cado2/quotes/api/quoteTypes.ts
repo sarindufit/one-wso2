@@ -745,6 +745,8 @@ export interface AuditEvent {
     | "APPROVAL_WORKFLOW_CREATED"
     | "APPROVAL_REQUESTED"
     | "APPROVAL_APPROVED"
+    // D119: a resubmitted step started approved, from an earlier version.
+    | "APPROVAL_CARRIED_OVER"
     // Kept for history from before Reject was merged into Return (2026-10-12).
     | "APPROVAL_REJECTED"
     // Primary quote (D68): on the quote, with no version.

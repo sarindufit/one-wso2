@@ -102,6 +102,13 @@ describe("history", () => {
     expect(describeEvent({ event: e, count: 1 })).toBe("Version 2 draft deleted");
   });
 
+  // D119: an approval kept from an earlier version on a resubmission.
+  it("says whose approval carried over, and from which version", () => {
+    expect(describeEvent({ event: event({ eventType: "APPROVAL_CARRIED_OVER", metadata: { role: "CFO", fromVersion: 1 } }), count: 1 })).toBe(
+      "CFO's approval carried over from version 1",
+    );
+  });
+
   // DGD-10: the documents added after the order form.
   it("names the supporting documents after a change", () => {
     expect(

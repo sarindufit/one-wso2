@@ -2132,6 +2132,11 @@ export const cado2ServiceUrls = {
   // What a sync would change on the opportunity (D138).
   quoteSyncPreview: (quoteId: number, version: number): string =>
     `${cado2BackendUrl}/quotes/${encodeSegment(quoteId)}/versions/${encodeSegment(version)}/sync/preview`,
+  // How Salesforce differs from a draft, and taking it (D173).
+  quoteSalesforceChanges: (quoteId: number, version: number): string =>
+    `${cado2BackendUrl}/quotes/${encodeSegment(quoteId)}/versions/${encodeSegment(version)}/salesforce-changes`,
+  quoteRefreshFromSalesforce: (quoteId: number, version: number): string =>
+    `${cado2BackendUrl}/quotes/${encodeSegment(quoteId)}/versions/${encodeSegment(version)}/refresh-from-salesforce`,
   quoteRecall: (quoteId: number, version: number): string =>
     `${cado2BackendUrl}/quotes/${encodeSegment(quoteId)}/versions/${encodeSegment(version)}/recall`,
   // A version's order form documents: GET lists them, POST issues the order form.

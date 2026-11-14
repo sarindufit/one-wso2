@@ -994,3 +994,26 @@ export interface SyncPreview {
   /** Changed opportunity fields, and products added, changed or removed. */
   readonly changes: number;
 }
+
+/** One Salesforce detail that differs from a draft (D173). */
+export interface SalesforceChange {
+  readonly group: "ACCOUNT" | "OPPORTUNITY" | "PREVIOUS_OPPORTUNITY" | "CONTACT" | "PRODUCT";
+  /** A product, contact role or previous opportunity; "" for the account or opportunity itself. */
+  readonly subject: string;
+  readonly field: string;
+  readonly before: string | null;
+  readonly after: string | null;
+  /** What taking it can change, e.g. "Changes the regional approvers". */
+  readonly effect: string | null;
+}
+
+/** How Salesforce differs from a draft; problems stop a refresh until fixed (D173). */
+export interface SalesforceChanges {
+  readonly changes: readonly SalesforceChange[];
+  readonly problems: readonly Issue[];
+}
+
+/** POST …/refresh-from-salesforce: the refreshed draft and the changes it took. */
+export interface RefreshFromSalesforceResponse extends DraftResponse {
+  readonly changes: readonly SalesforceChange[];
+}

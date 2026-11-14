@@ -2117,6 +2117,7 @@ export const cado2ServiceUrls = {
   adminSalesforceSync: `${cado2BackendUrl}/admin/salesforce-sync`,
   // Whether approval emails go out (D103; Admin).
   adminEmailNotifications: `${cado2BackendUrl}/admin/email-notifications`,
+  adminQuoteVersions: `${cado2BackendUrl}/admin/quote-versions`,
   // Insights (D106): Deal Desk and above, Admins.
   insightsApprovalOperations: `${cado2BackendUrl}/insights/approval-operations`,
   insightsQuotes: `${cado2BackendUrl}/insights/quotes`,

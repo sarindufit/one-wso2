@@ -753,6 +753,10 @@ export interface QuoteView {
   readonly status: VersionStatus;
   /** What the caller may do now; empty for anyone who may not change the quote. */
   readonly actions: readonly QuoteAction[];
+  /** The quote has as many versions as it may (D174): no Revise; clone it instead. */
+  readonly atVersionLimit?: boolean;
+  /** The Admin's limit on versions per quote (D174). */
+  readonly maxVersions?: number;
   /** The opportunity's primary quote, the one synced to Salesforce (D68). */
   readonly isPrimary: boolean;
   /** The caller may "Sync to Salesforce": sync on, primary, may change it (D77). */
